@@ -24,13 +24,13 @@ defmodule FastDownload.BlockSync do
         cond do
           (height-2) - count >= n ->
             Enum.to_list(count..(count+n-1))
-            |> Enum.map(&Task.async(fn -> fetch(&1) end))
+            |> Enum.map(&Task.async(fn -> cross_check(&1) end))
             |> Enum.map(&Task.await(&1, 10000))
             |> Enum.map(fn x -> add_block(x, file, height-2) end)
             evaluate(file, n, count+n)
           (height-2) - count < n ->
             Enum.to_list(count..(height-2))
-            |> Enum.map(&Task.async(fn -> fetch(&1) end))
+            |> Enum.map(&Task.async(fn -> cross_check(&1) end))
             |> Enum.map(&Task.await(&1, 10000))
             |> Enum.map(fn x -> add_block(x, file, height-2) end)
             IO.write(file, "]")
@@ -45,10 +45,6 @@ defmodule FastDownload.BlockSync do
     end
   end
 
-  defp fetch(height) do
-    get_block_by_height(height)
-  end
-
   #add block with transactions to the db
   def add_block(%{"index" => num} = block, file, height) do
     map = %{"index" => num, "block" => block}
@@ -59,14 +55,33 @@ defmodule FastDownload.BlockSync do
     IO.puts("Block #{num} saved")
   end
 
-
+  def cross_check(height) do
+    random1 = Enum.random(0..4)
+    cond do
+      random1 == 4 ->
+        random2 = 1
+      true ->
+        random2 = random1 + 1
+    end
+    blockA = get_block_by_height(random1, height)
+    blockB = get_block_by_height(random2, height)
+    %{"hash" => hashA} = blockA
+    %{"hash" => hashB} = blockB
+    cond do
+      hashA == hashB ->
+        blockA
+      true ->
+        cross_check(height)
+    end
+  end
   #handles error when fetching highest block from chain
-  def get_block_by_height(height) do
-    case Blockchain.get_block_by_height(Enum.random(0..4), height) do
+  def get_block_by_height(random, height) do
+    case Blockchain.get_block_by_height(random, height) do
       { :ok , block } ->
+        IO.inspect(block)
         block
       { :error, _reason} ->
-        get_block_by_height(height)
+        get_block_by_height(random, height)
     end
   end
 

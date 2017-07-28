@@ -12,11 +12,11 @@ defmodule FastDownload.HttpCalls do
   """
   def url(index \\ 0) do
     %{
-      0 => "http://seed1.neo.org:10332",
-      1 => "http://seed1.neo.org:10332",
-      2 => "http://seed1.neo.org:10332",
-      3 => "http://seed1.neo.org:10332",
-      4 => "http://seed1.neo.org:10332",
+      0 => "http://seed1.cityofzion.io:10332",
+      1 => "http://seed2.cityofzion.io:10332",
+      2 => "http://seed3.cityofzion.io:10332",
+      3 => "http://seed4.cityofzion.io:10332",
+      4 => "http://seed5.cityofzion.io:10332",
     }
     |> Map.get(index)
   end
